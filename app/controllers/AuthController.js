@@ -1,4 +1,11 @@
-const { User, Token } = require('../models/index')
+const {
+    User,
+    Token,
+    Caja,
+    Price,
+    AperturaCaja,
+    CierreCaja
+} = require('../models/index')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
@@ -170,7 +177,7 @@ module.exports = {
         } catch (error) {
             console.log(error)
             res.status(500).json({
-                msg: 'Error in the request'
+                msg: 'Error en la solicitud con el servidor!'
             })
         }
     },
@@ -190,6 +197,56 @@ module.exports = {
             console.log('error: ', error)
             res.status(500).json({
                 message: 'Error in the logout'
+            })
+        }
+    },
+    async getConfig(req, res) {
+        try {
+            // devolvemos los datos de usuario
+            const user = await User.findByPk(req.currentUser.id, {
+                attributes: [
+                    'id',
+                    'name',
+                    'lastName',
+                    'email',
+                    'phone',
+                    'photo',
+                    'rol',
+                    'ci',
+                    'active',
+                    'createdAt'
+                ]
+            })
+            // devolvemos las cajas
+            const cajas = await Caja.findAll({
+                order: [['name', 'ASC']],
+                attributes: { exclude: ['createdAt', 'updatedAt'] },
+                include: [
+                    {
+                        model: AperturaCaja,
+                        // required: false,
+                        include: [
+                            {
+                                model: CierreCaja,
+                                required: false,
+                                where: {
+                                    idAperturaCajas: null
+                                }
+                            }
+                        ]
+                    }
+                ]
+            })
+            // devolvemos los precios
+            const prices = await Price.findAll({
+                order: [['minutes', 'ASC']],
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
+            })
+            res.status(200).json({ user, cajas, prices })
+        } catch (error) {
+            console.log(error)
+            res.status(500).json({
+                msg: 'Error en la solicitud con el servidor!'
             })
         }
     }

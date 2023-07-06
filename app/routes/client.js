@@ -31,6 +31,18 @@ router.get(
     ClientController.select
 )
 router.get(
+    '/search',
+    [
+        validateToken,
+        (req, res, next) => {
+            req.rolePermissions = ['admin', 'cajero']
+            next()
+        },
+        validateRoles
+    ],
+    ClientController.search
+)
+router.get(
     '/:id',
     [
         validateToken,

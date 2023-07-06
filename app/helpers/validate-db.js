@@ -1,13 +1,15 @@
 module.exports = {
-    async checkExitsData(value, name, model) {
+    checkExitsData: async (value, name, model) => {
         if (!value) return false
         const data = await model.findOne({
             where: {
                 [name]: value
             }
         })
-        if (data)
-            throw new Error(`El ${name} ${value} existe en la base de datos!`)
+        if (!data)
+            throw new Error(
+                `El ${name} ${value} no existe en la base de datos!`
+            )
     },
 
     async checkExitsDataUpdate(value, name, model, id) {
@@ -23,16 +25,6 @@ module.exports = {
                     `El ${name} ${value} existe en la base de datos!`
                 )
         }
-    },
-
-    async existsInTable(value, name, model) {
-        if (!value) return false
-        const data = await model.findOne({
-            where: {
-                [name]: value
-            }
-        })
-        if (!data) throw new Error(`The ${name} ${value} does not exists in db`)
     },
 
     existeIdArreglo: async (arrayValues, model) => {

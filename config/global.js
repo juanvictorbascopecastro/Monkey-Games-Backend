@@ -1,5 +1,6 @@
 module.exports = {
     versionRouter: '/api/v1/',
     valueAdmin: 'admin',
-    rolUsers: ['admin', 'cajero']
+    rolUsers: ['admin', 'cajero'],
+    nameFolderProduct: 'productos'
 }

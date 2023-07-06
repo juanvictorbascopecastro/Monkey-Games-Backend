@@ -25,7 +25,7 @@ module.exports = {
         } catch (error) {
             console.log(error)
             res.status(500).json({
-                msg: 'Error in the request'
+                msg: 'Error en la solicitud con el servidor!'
             })
         }
     },
@@ -62,7 +62,7 @@ module.exports = {
             })
         } catch (error) {
             res.status(500).json({
-                msg: 'Error in the request'
+                msg: 'Error en la solicitud con el servidor!'
             })
         }
     },
@@ -108,7 +108,7 @@ module.exports = {
         } catch (error) {
             console.error(error)
             res.status(500).json({
-                message: 'Error in the request!'
+                message: 'Error en la solicitud con el servidor!!'
             })
         }
     },

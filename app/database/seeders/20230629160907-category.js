@@ -11,12 +11,12 @@ module.exports = {
 
 const categories = [
     {
-        id: 1,
+        // id: 1,
         name: 'Gaseosas',
         description: null
     },
     {
-        id: 2,
+        // id: 2,
         name: 'Dulces',
         description: null
     }

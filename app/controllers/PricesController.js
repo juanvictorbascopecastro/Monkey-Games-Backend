@@ -1,10 +1,10 @@
-const { Category } = require('../models/index')
+const { Price } = require('../models/index')
 
 module.exports = {
     async select(req, res) {
         try {
-            const response = await Category.findAll({
-                order: [['name', 'ASC']],
+            const response = await Price.findAll({
+                order: [['minutes', 'ASC']],
                 attributes: {
                     exclude: ['createdAt', 'updatedAt']
                 }
@@ -19,11 +19,14 @@ module.exports = {
     // crear item
     async create(req, res) {
         try {
-            const data = await Category.create(req.body)
-            res.status(200).json({
-                data,
-                message: 'Category create'
-            })
+            const { minutes } = req.body
+            const data = await Price.findOne({ where: { minutes } })
+            if (data)
+                return res.status(400).json({
+                    message: `Ya existe un precio para el minuto ${minutes}`
+                })
+            const response = await Price.create(req.body)
+            res.status(200).json(response)
         } catch (error) {
             console.log(error)
             res.status(500).json({
@@ -36,19 +39,24 @@ module.exports = {
     async update(req, res) {
         try {
             const { id } = req.params
-            const data = await Category.findByPk(id)
+            const { minutes } = req.body
+            const data = await Price.findByPk(id)
             if (!data) {
                 return res.status(404).json({
-                    message: `Category with id ${id} not found!`
+                    message: `Price with id ${id} not found!`
                 })
             }
 
-            await data.update(req.body)
+            const exits = await Price.findOne({ where: { minutes } })
+            console.log(exits.dataValues)
+            if (exits)
+                if (parseInt(id) !== exits.dataValues.id)
+                    return res.status(400).json({
+                        message: `Ya existe un precio para el minuto ${minutes}`
+                    })
 
-            res.status(200).json({
-                data,
-                message: 'Category updated'
-            })
+            const response = await data.update(req.body)
+            res.status(200).json(response)
         } catch (error) {
             res.status(500).json({
                 message: 'Error en la solicitud con el servidor!'
@@ -61,17 +69,17 @@ module.exports = {
         try {
             const { id } = req.params
 
-            const data = await Category.findByPk(id)
+            const data = await Price.findByPk(id)
             if (!data) {
                 return res.status(404).json({
-                    message: `Category with id ${id} not found!`
+                    message: `Price with id ${id} not found!`
                 })
             }
 
             await data.destroy()
 
             res.status(200).json({
-                message: 'Category Deleted'
+                message: 'Price Deleted'
             })
         } catch (error) {
             res.status(500).json({
@@ -83,10 +91,10 @@ module.exports = {
     async getById(req, res) {
         const { id } = req.params
 
-        const response = await Category.findByPk(id)
+        const response = await Price.findByPk(id)
         if (!response) {
             return res.status(404).json({
-                message: `Category with id ${id} not found!`
+                message: `Price with id ${id} not found!`
             })
         }
         return res.status(200).json(response)

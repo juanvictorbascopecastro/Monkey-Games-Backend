@@ -1,3 +1,4 @@
+const { Op } = require('sequelize')
 const { Client } = require('../models/index')
 const attributes = [
     'id',
@@ -21,7 +22,7 @@ module.exports = {
             return res.status(200).json(response)
         } catch (error) {
             res.status(500).json({
-                message: 'Error con el servidor!'
+                message: 'Error en la solicitud con el servidor!'
             })
         }
     },
@@ -44,14 +45,11 @@ module.exports = {
             }
 
             const data = await Client.create(req.body)
-            res.status(200).json({
-                data,
-                message: 'Cliente creado correctamente'
-            })
+            res.status(200).json(data)
         } catch (error) {
             console.log(error)
             res.status(500).json({
-                message: 'Error con el servidor!'
+                message: 'Error en la solicitud con el servidor!'
             })
         }
     },
@@ -76,7 +74,7 @@ module.exports = {
             })
         } catch (error) {
             res.status(500).json({
-                message: 'Error con el servidor!'
+                message: 'Error en la solicitud con el servidor!'
             })
         }
     },
@@ -100,7 +98,7 @@ module.exports = {
             })
         } catch (error) {
             res.status(500).json({
-                message: 'Error con el servidor!'
+                message: 'Error en la solicitud con el servidor!'
             })
         }
     },
@@ -115,5 +113,26 @@ module.exports = {
             })
         }
         return res.status(200).json(response)
+    },
+    async search(req, res) {
+        try {
+            const { text } = req.query
+            const response = await Client.findAll({
+                order: [['name', 'ASC']],
+                where: {
+                    [Op.or]: [
+                        { code: { [Op.like]: `%${text}%` } },
+                        { name: { [Op.like]: `%${text}%` } },
+                        { lastName: { [Op.like]: `%${text}%` } }
+                    ]
+                },
+                limit: 20
+            })
+            return res.status(200).json(response)
+        } catch (error) {
+            res.status(500).json({
+                message: 'Error en la solicitud con el servidor!'
+            })
+        }
     }
 }

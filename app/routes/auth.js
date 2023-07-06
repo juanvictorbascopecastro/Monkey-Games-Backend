@@ -15,6 +15,18 @@ const AuthController = require('../controllers/AuthController')
 const { User } = require('../models/index')
 const { rolUsers } = require('../../config/global')
 
+router.get(
+    '/config',
+    [
+        validateToken,
+        (req, res, next) => {
+            req.rolePermissions = ['admin', 'cajero']
+            next()
+        },
+        validateRoles
+    ],
+    AuthController.getConfig
+)
 router.post(
     '/signIn',
     [
