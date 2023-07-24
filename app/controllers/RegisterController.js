@@ -112,7 +112,20 @@ module.exports = {
             )
 
             const response = await Register.findAll({
-                include: [{ model: Client }, { model: User }],
+                include: [
+                    { model: Client },
+                    {
+                        model: User,
+                        attributes: {
+                            exclude: [
+                                'createdAt',
+                                'updatedAt',
+                                'password',
+                                'recoveryToken'
+                            ]
+                        }
+                    }
+                ],
                 where: {
                     date: {
                         [Op.between]: [dateInit, dateEnd]
@@ -132,7 +145,20 @@ module.exports = {
         try {
             const { id } = req.query
             const response = await Register.findAll({
-                include: [{ model: Client }, { model: User }],
+                include: [
+                    { model: Client },
+                    {
+                        model: User,
+                        attributes: {
+                            exclude: [
+                                'createdAt',
+                                'updatedAt',
+                                'password',
+                                'recoveryToken'
+                            ]
+                        }
+                    }
+                ],
                 where: {
                     idClients: id
                 },

@@ -4,10 +4,13 @@ const {
     Caja,
     Price,
     AperturaCaja,
-    CierreCaja
+    CierreCaja,
+    ConfigParam,
+    sequelize
 } = require('../models/index')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { Op } = require('sequelize')
 
 module.exports = {
     async signIn(req, res, next) {
@@ -220,29 +223,36 @@ module.exports = {
             // devolvemos las cajas
             const cajas = await Caja.findAll({
                 order: [['name', 'ASC']],
-                attributes: { exclude: ['createdAt', 'updatedAt'] },
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
+            })
+            // obtenemos los ids de las cajas aperturadas
+            const idsOpened = cajas
+                .filter(obj => obj.dataValues.idOpened !== null)
+                .map(obj => obj.dataValues.id)
+            // consultamos de acuerdo a las cajas aperturadas
+            const aperturas = await AperturaCaja.findAll({
+                where: {
+                    [Op.and]: [
+                        sequelize.where(
+                            sequelize.col(`"CierreCaja"."idAperturaCajas"`),
+                            null
+                        ),
+                        { idCajas: idsOpened }
+                    ]
+                },
                 include: [
                     {
-                        model: AperturaCaja,
-                        // required: false,
-                        include: [
-                            {
-                                model: CierreCaja,
-                                required: false,
-                                where: {
-                                    idAperturaCajas: null
-                                }
-                            }
-                        ]
+                        model: CierreCaja
                     }
                 ]
             })
+            const config = await ConfigParam.findAll()
             // devolvemos los precios
             const prices = await Price.findAll({
                 order: [['minutes', 'ASC']],
                 attributes: { exclude: ['createdAt', 'updatedAt'] }
             })
-            res.status(200).json({ user, cajas, prices })
+            res.status(200).json({ user, cajas, prices, aperturas, config })
         } catch (error) {
             console.log(error)
             res.status(500).json({

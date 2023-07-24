@@ -2,26 +2,22 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('AperturaCajas', {
+        await queryInterface.createTable('IngresoAlmacens', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            date: {
+            idProducts: {
                 allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: Sequelize.fn('now')
-            },
-            startAmount: {
-                type: Sequelize.FLOAT,
-                defaultValue: 0,
-                allowNull: false
-            },
-            comment: {
-                type: Sequelize.STRING(200),
-                allowNull: true
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'Products',
+                    key: 'id'
+                },
+                onUpdate: 'SET NULL',
+                onDelete: 'SET NULL'
             },
             idUsers: {
                 type: Sequelize.INTEGER,
@@ -43,6 +39,23 @@ module.exports = {
                 onUpdate: 'CASCADE',
                 onDelete: 'SET NULL'
             },
+            amount: {
+                allowNull: false,
+                type: Sequelize.INTEGER
+            },
+            price: {
+                allowNull: false,
+                type: Sequelize.FLOAT
+            },
+            date: {
+                allowNull: false,
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('now')
+            },
+            comment: {
+                type: Sequelize.STRING(200),
+                allowNull: true
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -56,6 +69,6 @@ module.exports = {
         })
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('AperturaCajas')
+        await queryInterface.dropTable('IngresoAlmacens')
     }
 }

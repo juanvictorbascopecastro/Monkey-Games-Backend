@@ -1,6 +1,7 @@
 const http = require('http')
 const app = require('./app/server.js')
 const server = http.createServer(app)
+const socket = require('socket.io')(server)
 const { sequelize } = require('./app/database/db')
 
 // escuchamos el servidor

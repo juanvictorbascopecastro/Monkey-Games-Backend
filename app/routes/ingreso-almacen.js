@@ -12,10 +12,12 @@ const {
 } = require('../helpers/validate-db')
 
 // * CONTROLLERS
-const ArqueoCajaController = require('../controllers/ArqueoCajaController')
+const IngresoAlmacenController = require('../controllers/IngresoAlmacenController')
 
 // * MODULOS
-const { User, Caja } = require('../models/index')
+const { Product, User, Caja } = require('../models/index')
+const { checkCajaParams } = require('../helpers/verificar-caja')
+// * ROUTES
 router.get(
     '/',
     [
@@ -26,73 +28,75 @@ router.get(
         },
         validateRoles
     ],
-    ArqueoCajaController.historico
+    IngresoAlmacenController.select
 )
+// router.get(
+//     '/:id',
+//     [
+//         (req, res, next) => {
+//             req.rolePermissions = ['admin', 'cajero']
+//             next()
+//         },
+//         validateRoles,
+//         param('id', 'Invalid id').notEmpty().isNumeric(),
+//         validateFields
+//     ],
+//     IngresoAlmacenController.getById
+// )
 router.get(
-    '/movement/:id',
+    '/filter',
     [
         validateToken,
         (req, res, next) => {
             req.rolePermissions = ['admin', 'cajero']
             next()
         },
-
+        validateRoles,
+        check('date', '"date" es requerido!').not().isEmpty(),
+        validateFields
+    ],
+    IngresoAlmacenController.selectFilter
+)
+router.post(
+    '/',
+    [
+        validateToken,
+        (req, res, next) => {
+            req.rolePermissions = ['admin', 'cajero']
+            next()
+        },
+        validateRoles,
+        check('amount', '"amount" is required!').not().isEmpty(),
+        check('price', '"price" is required!').not().isEmpty(),
+        check('idProducts', '"idProducts" is required!')
+            .not()
+            .isEmpty()
+            .isNumeric(),
+        check('idUsers', '"idUsers" is required!').not().isEmpty().isNumeric(),
+        check('idCajas', '"idCajas" is required!').not().isEmpty().isNumeric(),
+        check('idProducts').custom(value =>
+            checkExitsData(value, 'id', Product)
+        ),
+        check('idUsers').custom(value => checkExitsData(value, 'id', User)),
+        check('idCajas').custom(value => checkExitsData(value, 'id', Caja)),
+        validateFields,
+        checkCajaParams
+    ],
+    IngresoAlmacenController.create
+)
+router.delete(
+    '/:id',
+    [
+        validateToken,
+        (req, res, next) => {
+            req.rolePermissions = ['admin', 'cajero']
+            next()
+        },
         validateRoles,
         param('id', 'Invalid id').notEmpty().isNumeric(),
         validateFields
     ],
-    ArqueoCajaController.getMovements
-)
-// * ROUTES
-router.post(
-    '/aperturar',
-    [
-        validateToken,
-        (req, res, next) => {
-            req.rolePermissions = ['admin', 'cajero']
-            next()
-        },
-        validateRoles,
-        check('amount', '"amount" is required!').not().isEmpty().isNumeric(),
-        check('date', '"date" is required!').not().isEmpty(),
-        check('idUsers', '"idUsers" is required!').not().isEmpty().isNumeric(),
-        check('idCajas', '"idCajas" is required!').not().isEmpty().isNumeric(),
-        check('idUsers').custom(value => checkExitsData(value, 'id', User)),
-        check('idCajas').custom(value => checkExitsData(value, 'id', Caja)),
-        // check('data')
-        //     .isDate()
-        //     .withMessage(
-        //         'Formato de fecha no válido. Utilice el formato AAAA-MM-DD.'
-        //     ),
-        validateFields
-    ],
-    ArqueoCajaController.aperturar
-)
-router.post(
-    '/cerrar',
-    [
-        validateToken,
-        (req, res, next) => {
-            req.rolePermissions = ['admin', 'cajero']
-            next()
-        },
-        validateRoles,
-        check('endAmount', '"endAmount" is required!')
-            .not()
-            .isEmpty()
-            .isNumeric(),
-        check('expected', '"expected" is required!')
-            .not()
-            .isEmpty()
-            .isNumeric(),
-        check('date', '"date" is required!').not().isEmpty(),
-        check('idUsers', '"idUsers" is required!').not().isEmpty().isNumeric(),
-        check('idCajas', '"idCajas" is required!').not().isEmpty().isNumeric(),
-        check('idUsers').custom(value => checkExitsData(value, 'id', User)),
-        check('idCajas').custom(value => checkExitsData(value, 'id', Caja)),
-        validateFields
-    ],
-    ArqueoCajaController.cerrar
+    IngresoAlmacenController.delete
 )
 
 module.exports = router

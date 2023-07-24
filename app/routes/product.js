@@ -20,7 +20,7 @@ router.get(
     [
         validateToken,
         (req, res, next) => {
-            req.rolePermissions = ['admin']
+            req.rolePermissions = ['admin', 'cajero']
             next()
         },
         validateRoles
@@ -32,7 +32,7 @@ router.get(
     [
         validateToken,
         (req, res, next) => {
-            req.rolePermissions = ['admin']
+            req.rolePermissions = ['admin', 'cajero']
             next()
         },
         validateRoles
@@ -44,7 +44,7 @@ router.get(
     [
         validateToken,
         (req, res, next) => {
-            req.rolePermissions = ['admin']
+            req.rolePermissions = ['admin', 'cajero']
             next()
         },
         validateRoles,

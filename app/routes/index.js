@@ -12,5 +12,8 @@ router.use('/cajas', require('./caja'))
 router.use('/arqueo-caja', require('./arqueo-caja'))
 router.use('/register', require('./register'))
 router.use('/prices', require('./price'))
+router.use('/ingreso-almacen', require('./ingreso-almacen'))
+router.use('/venta', require('./venta'))
+router.use('/config-params', require('./configParams'))
 
 module.exports = router

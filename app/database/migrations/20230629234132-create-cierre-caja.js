@@ -24,7 +24,7 @@ module.exports = {
                 allowNull: true
             },
             comment: {
-                type: Sequelize.STRING,
+                type: Sequelize.STRING(200),
                 allowNull: true
             },
             idUsers: {

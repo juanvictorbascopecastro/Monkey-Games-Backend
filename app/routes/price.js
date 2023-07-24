@@ -15,7 +15,7 @@ const {
 const PricesController = require('../controllers/PricesController')
 
 // * MODULOS
-const { Price } = require('../models/index')
+const { User } = require('../models/index')
 // * ROUTES
 router.get(
     '/',
@@ -54,6 +54,7 @@ router.post(
         check('minutes', '"minutes" es requerido!').not().isEmpty(),
         check('price', '"price" es requerido!').not().isEmpty(),
         check('idUsers', '"idUsers" es requerido!').not().isEmpty().isNumeric(),
+        check('idUsers').custom(value => checkExitsData(value, 'id', User)),
         validateFields
     ],
     PricesController.create
@@ -68,6 +69,10 @@ router.put(
         },
         validateRoles,
         param('id', 'Invalid id').notEmpty().isNumeric(),
+        check('idUsers').custom(value => {
+            if (value) return checkExitsData(value, 'id', User)
+            return true
+        }),
         validateFields
     ],
     PricesController.update

@@ -44,7 +44,7 @@ const validateRoles = (req, res, next) => {
     if (req.rolePermissions.indexOf(req.currentUser.rol) > -1) next()
     else
         return res.status(403).json({
-            msg: `El usuario con el rol ${req.currentUser.rol} no tiene acceso a realiar esta funcion!`
+            message: `El usuario con el rol ${req.currentUser.rol} no tiene acceso a realiar esta funcion!`
         })
 }
 // verificamos acciones propios

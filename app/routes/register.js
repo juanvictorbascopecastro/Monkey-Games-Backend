@@ -17,6 +17,7 @@ const RegisterController = require('../controllers/RegisterController')
 
 // * MODULOS
 const { User, Caja, Client } = require('../models/index')
+const { checkCajaParams } = require('../helpers/verificar-caja')
 router.get(
     '/',
     [
@@ -68,6 +69,8 @@ router.post(
         validateRoles,
         check('minutes', '"minutes" is required!').not().isEmpty().isNumeric(),
         check('date', '"date" is required!').not().isEmpty(),
+        check('idUsers', '"idUsers" is required!').not().isEmpty().isNumeric(),
+        check('idCajas', '"idCajas" is required!').not().isEmpty().isNumeric(),
         check('idUsers').custom(value => checkExitsData(value, 'id', User)),
         check('idCajas').custom(value => checkExitsData(value, 'id', Caja)),
         // check('idClients').custom(value => checkExitsData(value, 'id', Client)),
@@ -75,7 +78,8 @@ router.post(
             if (value) return checkExitsData(value, 'id', Client)
             return true
         }),
-        validateFields
+        validateFields,
+        checkCajaParams
     ],
     RegisterController.create
 )
@@ -103,7 +107,8 @@ router.put(
             if (value) return checkExitsData(value, 'id', Client)
             return true
         }),
-        validateFields
+        validateFields,
+        checkCajaParams
     ],
     RegisterController.update
 )

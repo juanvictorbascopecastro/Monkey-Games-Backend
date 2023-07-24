@@ -11,7 +11,18 @@ module.exports = {
                 `El ${name} ${value} no existe en la base de datos!`
             )
     },
-
+    alreadyExistsInDb: async (value, name, model) => {
+        if (!value) return false
+        const data = await model.findOne({
+            where: {
+                [name]: value
+            }
+        })
+        if (data)
+            throw new Error(
+                `El ${name} ${value} ya existe en la base de datos!`
+            )
+    },
     async checkExitsDataUpdate(value, name, model, id) {
         let data = await model.findOne({
             where: {

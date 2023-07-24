@@ -10,7 +10,7 @@ const {
 } = require('../middlewares/auth')
 const { validateFields } = require('../middlewares/validateFields')
 const {
-    checkExitsData,
+    alreadyExistsInDb,
     checkExitsDataUpdate
 } = require('./../helpers/validate-db')
 
@@ -74,7 +74,7 @@ router.post(
             'password',
             'El campo "password" debe tener al menos 6 caracteres'
         ).isLength({ min: 6 }),
-        check('email').custom(value => checkExitsData(value, 'email', User)),
+        check('email').custom(value => alreadyExistsInDb(value, 'email', User)),
         validateFields
     ],
     AbortController.create

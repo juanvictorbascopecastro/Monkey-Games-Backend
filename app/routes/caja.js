@@ -9,7 +9,8 @@ const { validateFields } = require('../middlewares/validateFields')
 const {
     checkExitsData,
     checkExitsDataUpdate,
-    existsInTable
+    existsInTable,
+    alreadyExistsInDb
 } = require('../helpers/validate-db')
 
 // * CONTROLLERS
@@ -54,9 +55,9 @@ router.post(
         },
         validateRoles,
         check('name', 'Name is required!').not().isEmpty(),
-        check('name').custom(value => checkExitsData(value, 'name', Caja)),
+        check('name').custom(value => alreadyExistsInDb(value, 'name', Caja)),
         check('idUsers').custom(value => {
-            if (value) return existsInTable(value, 'id', User)
+            if (value) return checkExitsData(value, 'id', User)
             return true
         }),
         validateFields
