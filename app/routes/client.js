@@ -43,6 +43,20 @@ router.get(
     ClientController.search
 )
 router.get(
+    '/find/code/:code',
+    [
+        validateToken,
+        (req, res, next) => {
+            req.rolePermissions = ['admin', 'cajero']
+            next()
+        },
+        validateRoles,
+        param('code', 'Invalid code').notEmpty(),
+        validateFields
+    ],
+    ClientController.getByCode
+)
+router.get(
     '/:id',
     [
         validateToken,
@@ -56,6 +70,7 @@ router.get(
     ],
     ClientController.getById
 )
+
 router.post(
     '/',
     [

@@ -53,7 +53,6 @@ module.exports = {
             })
         }
     },
-
     // actualizar item
     async update(req, res) {
         try {
@@ -78,7 +77,6 @@ module.exports = {
             })
         }
     },
-
     // eliminar item
     async delete(req, res) {
         try {
@@ -102,7 +100,7 @@ module.exports = {
             })
         }
     },
-
+    // obtener por id
     async getById(req, res) {
         const { id } = req.params
 
@@ -114,6 +112,7 @@ module.exports = {
         }
         return res.status(200).json(response)
     },
+    // buscar por caracter
     async search(req, res) {
         try {
             const { text } = req.query
@@ -134,5 +133,20 @@ module.exports = {
                 message: 'Error en la solicitud con el servidor!'
             })
         }
+    },
+    // obtener por codigo de cliente
+    async getByCode(req, res) {
+        const { code } = req.params
+
+        const response = await Client.findOne(
+            { where: { code } },
+            { attributes }
+        )
+        if (!response) {
+            return res.status(404).json({
+                message: `Cliente con el codigo ${code} no existe!`
+            })
+        }
+        return res.status(200).json(response)
     }
 }
