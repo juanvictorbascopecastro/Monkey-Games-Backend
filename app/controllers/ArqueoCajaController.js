@@ -88,6 +88,7 @@ module.exports = {
     async historico(req, res) {
         try {
             const response = await AperturaCaja.findAll({
+                order: [['date', 'DESC']],
                 include: [
                     {
                         model: CierreCaja,
@@ -112,109 +113,6 @@ module.exports = {
             })
             res.status(200).json(response)
         } catch (error) {
-            res.status(500).json({
-                message: 'Error en la solicitud con el servidor!'
-            })
-        }
-    },
-    async movement(req, res) {
-        try {
-            const { id } = req.params
-            const caja = await Caja.findByPk(id)
-            if (!caja)
-                return res.status(404).json({
-                    message: `¡Caja con el id ${id} no existe!`
-                })
-            const apertura = await AperturaCaja.findOne({
-                where: {
-                    [Op.and]: [
-                        sequelize.where(
-                            sequelize.col(`"CierreCaja"."idAperturaCajas"`),
-                            null
-                        ),
-                        { id: caja.idOpened }
-                    ]
-                },
-                include: [
-                    {
-                        model: CierreCaja,
-                        required: false,
-                        where: {
-                            id: null
-                        }
-                    }
-                ]
-                // order: [['date', 'DESC']]
-            })
-            if (!apertura)
-                return res.status(400).json({
-                    message: 'No se llevó a cabo la apertura de la caja!'
-                })
-            const date = new Date()
-            const dateInit = apertura.dataValues.date
-            const dateEnd = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate(),
-                23,
-                59,
-                59
-            )
-            console.log(dateInit)
-            console.log(dateEnd)
-            const response = await Register.findAll({
-                include: [
-                    { model: Client },
-                    {
-                        model: User,
-                        attributes: {
-                            exclude: [
-                                'createdAt',
-                                'updatedAt',
-                                'password',
-                                'recoveryToken'
-                            ]
-                        }
-                    }
-                ],
-                attributes: [
-                    'createdAt',
-                    'date',
-                    'description',
-                    'endDate',
-                    'id',
-                    'idCajas',
-                    'idClients',
-                    'idUsers',
-                    'minutes',
-                    'price',
-                    'status',
-                    [sequelize.literal("'Ingreso a juegos'"), 'movimiento']
-                ],
-                where: {
-                    date: {
-                        [Op.between]: [dateInit, dateEnd]
-                    }
-                },
-                limit: 100,
-                order: [['date', 'DESC']]
-            })
-            const totalRegister = await Register.findOne({
-                attributes: [
-                    [sequelize.fn('sum', sequelize.col('price')), 'total']
-                ],
-                where: {
-                    date: {
-                        [Op.between]: [dateInit, dateEnd]
-                    }
-                }
-            })
-            res.status(200).json({
-                list: response,
-                total: totalRegister.dataValues.total
-            })
-        } catch (error) {
-            console.log(error)
             res.status(500).json({
                 message: 'Error en la solicitud con el servidor!'
             })

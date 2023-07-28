@@ -4,7 +4,8 @@ class UserClass {
     }
 
     addPerson(data) {
-        this.persons.push(data)
+        if (!this.persons.some(item => item.socketId === data.socketId))
+            this.persons.push(data)
         return this.persons
     }
 

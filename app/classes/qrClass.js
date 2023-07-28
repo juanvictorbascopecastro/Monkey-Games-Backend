@@ -8,15 +8,15 @@ class QrClass {
         return this.list
     }
 
-    getData(id) {
-        return this.list.find(per => per.id === id)
+    getData(codeEmit) {
+        return this.list.find(item => item.codeEmit === codeEmit)
     }
     getDatas() {
         return this.list
     }
-    removeData(id) {
-        const rqRemove = this.getData(id)
-        this.list = this.list.filter(per => per.id !== id)
+    removeData(codeEmit) {
+        const rqRemove = this.getData(codeEmit)
+        this.list = this.list.filter(item => item.codeEmit !== codeEmit)
         return rqRemove
     }
 }

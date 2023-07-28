@@ -22,10 +22,10 @@ const SOCKET_CLIENTE_BUSCADO = 'enviar-cliente'
 const SOCKET_CLIENTE_ATENDIDO = 'atender-cliente'
 
 const socketController = socket => {
-    // console.log('Cliente socket conectado', socket.id)
     // cuando se conecta un usuario
     socket.on(SOCKET_USER_CONNECT, async (data, callback) => {
         try {
+            // console.log('CONECTADO: ', socket.id)
             if (!data.id)
                 return callback({ error: true, message: 'El id es necesario!' })
 
@@ -42,7 +42,7 @@ const socketController = socket => {
                 date: new Date().getTime()
             }
             const list = userClass.addPerson(user)
-            callback({ codeNew: socket.id, list })
+            callback({ codeNew: socket.id, list, qrs: qrClass.getDatas() })
             socket.broadcast.emit(SOCKET_USER_CONNECT, {
                 codeNew: socket.id,
                 list
@@ -54,7 +54,7 @@ const socketController = socket => {
     // cuando se desconecta un usuario
     socket.on('disconnect', () => {
         const person = userClass.removePerson(socket.id)
-        // console.log(person)
+        // console.log('DESCONECTADO: ', socket.id)
         socket.broadcast.emit(SOCKET_USER_DISCONNECT, {
             codeNew: socket.id,
             list: userClass.getPersons()
@@ -75,15 +75,28 @@ const socketController = socket => {
         }
         const list = qrClass.addData(params)
         callback(params) // devolvemos al cliente
-        socket.broadcast.emit(SOCKET_CLIENTE_BUSCADO, list)
+        socket.broadcast.emit(SOCKET_CLIENTE_BUSCADO, {
+            list,
+            codeEmit: params.codeEmit
+        })
         // socket.broadcast.to(socketId).emit(SOCKET_CLIENTE_BUSCADO)
         // socket.join('nombre-sala')
         // socket.broadcast.to('nombre-sala').emit(SOCKET_CLIENTE_BUSCADO)
     })
     // cuando ya se atendio un cliente
-    socket.on(SOCKET_CLIENTE_ATENDIDO, async data => {
-        const mData = qrClass.removeData(data.code)
-        socket.broadcast.emit(SOCKET_CLIENTE_ATENDIDO, qrClass.getDatas())
+    socket.on(SOCKET_CLIENTE_ATENDIDO, async code => {
+        try {
+            console.log('REMOVER', code)
+            const params = qrClass.removeData(code)
+            // callback(qrClass.getDatas())
+            console.log(qrClass.getDatas())
+            socket.broadcast.emit(SOCKET_CLIENTE_ATENDIDO, {
+                list: qrClass.getDatas(),
+                codeEmit: params.codeEmit
+            })
+        } catch (e) {
+            console.log(e)
+        }
     })
 }
 module.exports = { socketController }
