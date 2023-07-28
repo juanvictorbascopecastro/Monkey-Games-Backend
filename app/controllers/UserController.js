@@ -123,7 +123,6 @@ module.exports = {
                 message: `User with id ${id} not found!`
             })
         }
-
         return res.status(200).json(response)
     }
 }

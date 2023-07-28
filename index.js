@@ -1,14 +1,21 @@
 const http = require('http')
 const app = require('./app/server.js')
 const server = http.createServer(app)
-const socket = require('socket.io')(server)
+const io = require('socket.io')(server, {
+    cors: {
+        origin: 'http://localhost:5173',
+        methods: 'GET, POST, PUT, DELETE',
+        allowedHeaders: 'Content-Type, Authorization'
+    }
+})
 const { sequelize } = require('./app/database/db')
 
+// Eventos de sockets
+require('./app/sockets/index.js')(io)
 // escuchamos el servidor
 const port = process.env.PORT || 3000
 server.listen(port, err => {
     if (err) throw new Error(err)
-
     console.log(`Servidor corriendo en puerto ${port}`)
 })
 
