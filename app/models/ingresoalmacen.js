@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
             this.belongsTo(models.Product, { foreignKey: 'idProducts' })
             this.belongsTo(models.User, { foreignKey: 'idUsers' })
             this.belongsTo(models.Caja, { foreignKey: 'idCajas' })
+            this.belongsTo(models.AperturaCaja, {
+                foreignKey: 'idAperturaCajas'
+            })
         }
     }
     IngresoAlmacen.init(
@@ -19,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
             idProducts: DataTypes.INTEGER,
             idUsers: DataTypes.INTEGER,
             idCajas: DataTypes.INTEGER,
+            idAperturaCajas: DataTypes.INTEGER,
             amount: DataTypes.INTEGER,
             date: DataTypes.DATE,
             price: DataTypes.FLOAT,

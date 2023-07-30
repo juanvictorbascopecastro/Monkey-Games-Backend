@@ -18,6 +18,9 @@ module.exports = (sequelize, DataTypes) => {
             this.belongsTo(models.Caja, {
                 foreignKey: 'idCajas'
             })
+            this.belongsTo(models.AperturaCaja, {
+                foreignKey: 'idAperturaCajas'
+            })
         }
     }
     Register.init(
@@ -28,6 +31,8 @@ module.exports = (sequelize, DataTypes) => {
             price: DataTypes.FLOAT,
             idUsers: DataTypes.INTEGER,
             idClients: DataTypes.INTEGER,
+            idCajas: DataTypes.INTEGER,
+            idAperturaCajas: DataTypes.INTEGER,
             endDate: DataTypes.DATE,
             status: DataTypes.BOOLEAN,
             createdAt: DataTypes.DATE

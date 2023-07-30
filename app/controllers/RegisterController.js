@@ -1,5 +1,6 @@
 const { Op } = require('sequelize')
 const { Register, Client, User, Price } = require('../models/index')
+const { getIdApertura } = require('../helpers/query-db')
 
 module.exports = {
     async enCurso(req, res) {
@@ -22,12 +23,18 @@ module.exports = {
                     })
                 price = valPrice.dataValues.price
             }
+            if (req.body.idCajas) {
+                // obtenemos el id de la apertura
+                const idApertura = await getIdApertura(req.body.idCajas)
+                if (idApertura) req.body.idAperturaCajas = idApertura
+            }
             const data = await Register.create({ ...req.body, price })
             const response = await Register.findByPk(data.dataValues.id, {
                 include: [{ model: Client }]
             })
             return res.status(200).json(response)
         } catch (error) {
+            console.log(error)
             res.status(500).json({
                 message: 'Error en la solicitud con el servidor!'
             })

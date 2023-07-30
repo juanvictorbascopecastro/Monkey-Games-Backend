@@ -84,15 +84,13 @@ const socketController = socket => {
         // socket.broadcast.to('nombre-sala').emit(SOCKET_CLIENTE_BUSCADO)
     })
     // cuando ya se atendio un cliente
-    socket.on(SOCKET_CLIENTE_ATENDIDO, async code => {
+    socket.on(SOCKET_CLIENTE_ATENDIDO, async (code, callback) => {
         try {
-            console.log('REMOVER', code)
             const params = qrClass.removeData(code)
-            // callback(qrClass.getDatas())
-            console.log(qrClass.getDatas())
+            callback(qrClass.getDatas())
             socket.broadcast.emit(SOCKET_CLIENTE_ATENDIDO, {
                 list: qrClass.getDatas(),
-                codeEmit: params.codeEmit
+                codeEmit: params?.codeEmit
             })
         } catch (e) {
             console.log(e)

@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
             this.belongsTo(models.Client, { foreignKey: 'idClients' })
             this.belongsTo(models.User, { foreignKey: 'idUsers' })
             this.belongsTo(models.Caja, { foreignKey: 'idCajas' })
+            this.belongsTo(models.AperturaCaja, {
+                foreignKey: 'idAperturaCajas'
+            })
 
             this.hasMany(models.VentaProduct, { foreignKey: 'idVentas' })
         }
@@ -21,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
             idClients: DataTypes.INTEGER,
             idUsers: DataTypes.INTEGER,
             idCajas: DataTypes.INTEGER,
+            idAperturaCajas: DataTypes.INTEGER,
             date: DataTypes.DATE,
             discount: DataTypes.FLOAT,
             isCanceled: DataTypes.BOOLEAN,

@@ -55,6 +55,16 @@ module.exports = {
                 onUpdate: 'CASCADE',
                 onDelete: 'SET NULL'
             },
+            idAperturaCajas: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+                references: {
+                    model: 'AperturaCajas',
+                    key: 'id'
+                },
+                onUpdate: 'CASCADE',
+                onDelete: 'SET NULL'
+            },
             status: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,

@@ -1,5 +1,6 @@
 const { Op } = require('sequelize')
 const { IngresoAlmacen, Product, Caja, User } = require('../models/index')
+const { getIdApertura } = require('../helpers/query-db')
 
 module.exports = {
     async select(req, res) {
@@ -105,6 +106,11 @@ module.exports = {
                 return res.status(400).json({
                     message: `Producto con el id ${req.body.idProducts} no existe!`
                 })
+            if (req.body.idCajas) {
+                // obtenemos el id de la apertura
+                const idApertura = await getIdApertura(req.body.idCajas)
+                if (idApertura) req.body.idAperturaCajas = idApertura
+            }
             await IngresoAlmacen.create(req.body)
             const response = await product.update({
                 stock: product.dataValues.stock + parseInt(req.body.amount)

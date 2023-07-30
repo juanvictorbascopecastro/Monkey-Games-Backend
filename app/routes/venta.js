@@ -59,6 +59,18 @@ router.get(
     ],
     ventaController.selectFilter
 )
+router.get(
+    '/canceled/data',
+    [
+        validateToken,
+        (req, res, next) => {
+            req.rolePermissions = ['admin']
+            next()
+        },
+        validateRoles
+    ],
+    ventaController.getCanceled
+)
 router.post(
     '/',
     [
@@ -131,14 +143,9 @@ router.put(
             if (value) return checkExitsData(value, 'id', Client)
             return true
         }),
-        check('idCajas').custom(value => {
-            if (value) return checkExitsData(value, 'id', Caja)
-            return true
-        }),
-        check('idUsers').custom(value => {
-            if (value) return checkExitsData(value, 'id', User)
-            return true
-        }),
+        check('idCajas').custom(value => checkExitsData(value, 'id', Caja)),
+        check('idUsers', 'idUsers is required!').not().isEmpty(),
+        check('idUsers').custom(value => checkExitsData(value, 'id', User)),
         check('products').custom(values => {
             const errors = []
             if (!Array.isArray(values)) {
@@ -163,10 +170,9 @@ router.put(
         check('products').custom(values =>
             existeIdArregloObject(values, Product, 'idProducts')
         ),
-        validateFields,
-        checkCajaParams
+        validateFields
     ],
-    ventaController.create
+    ventaController.update
 )
 router.delete(
     '/:id',

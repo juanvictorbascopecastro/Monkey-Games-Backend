@@ -1,8 +1,14 @@
 const { valueAdmin } = require('../../config/global')
 const {
-    CONFIG_VENTA
+    CONFIG_VENTA,
+    up
 } = require('../database/seeders/20230716170025-configParams')
-const { checkStock, updateStock } = require('../helpers/product-stock')
+const {
+    checkStock,
+    updateStock,
+    checkStockUpdate
+} = require('../helpers/product-stock')
+const { getIdApertura } = require('../helpers/query-db')
 const { createArrayObject } = require('./../helpers/db-arrays')
 const {
     Venta,
@@ -10,7 +16,8 @@ const {
     Product,
     ConfigParam,
     Client,
-    User
+    User,
+    Caja
 } = require('./../models/index')
 const { Op } = require('sequelize')
 const options = {
@@ -152,7 +159,6 @@ module.exports = {
                     .status(400)
                     .json({ message: '¡No hay productos agregado a la venta!' })
 
-            if (idCajas) dataDb.idCajas = idCajas
             // consultamos la configuracion
             const config = await ConfigParam.findOne({
                 where: { name: CONFIG_VENTA }
@@ -165,6 +171,14 @@ module.exports = {
                 // actualizar stock
                 await updateStock(productModel, products)
             }
+            // obtenemos el id de la apertura de caja
+            if (idCajas) {
+                // obtenemos el id de la apertura
+                const idApertura = await getIdApertura(idCajas)
+                if (idApertura) dataDb.idAperturaCajas = idApertura
+                dataDb.idCajas = idCajas
+            }
+
             const data = await Venta.create(dataDb)
             // registramos los productos de esa venta
             await createArrayObject(
@@ -175,6 +189,98 @@ module.exports = {
             )
 
             const response = await Venta.findByPk(data.dataValues.id, options)
+            res.status(201).json(response)
+        } catch (error) {
+            return res.status(500).json({
+                message: 'Error en la solicitud con el servidor!'
+            })
+        }
+    },
+    async update(req, res) {
+        try {
+            const {
+                idClients,
+                date,
+                discount,
+                total,
+                idUsers,
+                products,
+                details,
+                importe,
+                idCajas
+            } = req.body
+
+            const dataDb = {
+                idClients,
+                date,
+                details,
+                total,
+                idUsers,
+                discount,
+                importe
+            }
+            const { id } = req.params
+
+            const venta = await Venta.findByPk(id, options)
+            if (!venta)
+                return res.status(404).json({
+                    message: `Venta con el id ${id} no existe!`
+                })
+
+            if (!Array.isArray(products))
+                return res
+                    .status(400)
+                    .json({ message: '¡El parámetro "products" no es válido!' })
+
+            if (products.length <= 0)
+                return res
+                    .status(400)
+                    .json({ message: '¡No hay productos agregado a la venta!' })
+            // verificamos si se puede editar
+            if (req.currentUser.rol !== valueAdmin) {
+                const caja = await Caja.findByPk(venta.dataValues.idCajas)
+                if (!caja.dataValues.idOpened) {
+                    return res.status(400).json({
+                        message: `Usted no puede actualizar esta venta!`
+                    })
+                }
+                if (
+                    venta.dataValues.idAperturaCajas !==
+                    caja.dataValues.idOpened
+                ) {
+                    return res.status(400).json({
+                        message: `Usted no puede modificar esta venta!`
+                    })
+                }
+            }
+            // consultamos la configuracion
+            const config = await ConfigParam.findOne({
+                where: { name: CONFIG_VENTA }
+            })
+            const configVenta = JSON.parse(config.dataValues.datas)
+            if (configVenta.activeStockVenta) {
+                // verificamos el stock del producto
+                const { errors, productModel } = await checkStockUpdate(
+                    products,
+                    venta.dataValues.VentaProducts
+                )
+                if (errors.length > 0) return res.status(400).json(errors)
+                // // actualizar stock
+                await updateStock(productModel, products)
+            }
+            // // obtenemos el id de la apertura de caja
+            if (idCajas) {
+                // obtenemos el id de la apertura
+                const idApertura = await getIdApertura(idCajas)
+                if (idApertura) dataDb.idAperturaCajas = idApertura
+                dataDb.idCajas = idCajas
+            }
+
+            await Venta.update(dataDb, { where: { id } })
+            // // registramos los productos de esa venta
+            await createArrayObject(products, VentaProduct, id, 'idVentas')
+
+            const response = await Venta.findByPk(id, options)
             res.status(201).json(response)
         } catch (error) {
             console.log(error)
@@ -249,21 +355,32 @@ module.exports = {
                 return res.status(404).json({
                     message: `Venta con el id ${id} no existe!`
                 })
-            console.log(req.currentUser)
-            if (req.currentUser.rol !== valueAdmin) {
-                if (data.dataValues.idUsers !== req.currentUser.id) {
-                    return res.status(404).json({
-                        message: `Usted no puede cancelar esta venta!`
-                    })
-                }
+            if (req.currentUser.rol === valueAdmin) {
+                await data.update({ isCanceled: true })
+                return res.status(200).json({
+                    message: 'Venta Canceled'
+                })
             }
+            const caja = await Caja.findByPk(data.dataValues.idCajas)
 
-            await data.update({ isCanceled: true })
-
-            res.status(200).json({
-                message: 'Venta Canceled'
-            })
+            if (!caja.dataValues.idOpened) {
+                return res.status(400).json({
+                    message: `Usted no puede cancelar esta venta!`
+                })
+            }
+            if (data.dataValues.idAperturaCajas === caja.dataValues.idOpened) {
+                // verificamos que la apertura de caja sea la actual
+                await data.update({ isCanceled: true })
+                return res.status(200).json({
+                    message: 'Venta Canceled'
+                })
+            } else {
+                return res.status(400).json({
+                    message: `Usted no puede cancelar esta venta!`
+                })
+            }
         } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 message: 'Error en la solicitud con el servidor!'
             })
@@ -279,6 +396,40 @@ module.exports = {
                     message: `Venta con el id ${id} no existe!`
                 })
 
+            return res.status(200).json(response)
+        } catch (error) {
+            return res.status(500).json({
+                message: 'Error en la solicitud con el servidor!'
+            })
+        }
+    },
+    // ventas canceladas
+    async getCanceled(req, res) {
+        try {
+            let { start, end } = req.query
+            let query = {}
+            if (start && end) {
+                start = new Date(start)
+                end = new Date(end)
+
+                query = {
+                    where: {
+                        createdAt: {
+                            [Op.between]: [start, end]
+                        }
+                    },
+                    ...options
+                }
+            } else {
+                query = {
+                    limit: 100,
+                    ...options,
+                    where: {
+                        isCanceled: true
+                    }
+                }
+            }
+            const response = await Venta.findAll(query)
             return res.status(200).json(response)
         } catch (error) {
             return res.status(500).json({
