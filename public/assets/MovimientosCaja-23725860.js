@@ -1,0 +1,1 @@
+import{T as e}from"./TableMovimientoCaja-c81a5822.js";import{_ as t,r as a,e as n,o as r}from"./index-67878955.js";import"./format-date-ea6389fa.js";import"./Paginador-d0e0f757.js";const s={components:{TableMovimientoCaja:e}};function c(m,i,p,_,f,l){const o=a("table-movimiento-caja");return r(),n(o)}const $=t(s,[["render",c]]);export{$ as default};

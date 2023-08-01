@@ -350,19 +350,26 @@ module.exports = {
         try {
             const { id } = req.params
 
-            const data = await Venta.findByPk(id)
+            const data = await Venta.findByPk(id, { ...options, where: {} })
             if (!data)
                 return res.status(404).json({
                     message: `Venta con el id ${id} no existe!`
                 })
+            // si es una venta de hace 1 mes no es posible editar
+            const today = new Date()
+            today.setMonth(today.getMonth() - 1)
+            if (data.dataValues.date < today)
+                return res.status(400).json({
+                    message: `No es posible cancelar ventas de hace mucho tiempo!`
+                })
             if (req.currentUser.rol === valueAdmin) {
+                await previousValue(data.dataValues.VentaProducts)
                 await data.update({ isCanceled: true })
                 return res.status(200).json({
                     message: 'Venta Canceled'
                 })
             }
             const caja = await Caja.findByPk(data.dataValues.idCajas)
-
             if (!caja.dataValues.idOpened) {
                 return res.status(400).json({
                     message: `Usted no puede cancelar esta venta!`
@@ -370,15 +377,15 @@ module.exports = {
             }
             if (data.dataValues.idAperturaCajas === caja.dataValues.idOpened) {
                 // verificamos que la apertura de caja sea la actual
+                await previousValue(data.dataValues.VentaProducts)
                 await data.update({ isCanceled: true })
                 return res.status(200).json({
                     message: 'Venta Canceled'
                 })
-            } else {
+            } else
                 return res.status(400).json({
                     message: `Usted no puede cancelar esta venta!`
                 })
-            }
         } catch (error) {
             console.log(error)
             return res.status(500).json({
@@ -437,4 +444,40 @@ module.exports = {
             })
         }
     }
+}
+
+async function previousValue(ventaProducts) {
+    const config = await ConfigParam.findOne({
+        where: { name: CONFIG_VENTA }
+    })
+    const configVenta = JSON.parse(config.dataValues.datas)
+    if (configVenta.activeStockVenta) {
+        const arrayStock = await Product.findAll({
+            where: { id: ventaProducts.map(item => item.dataValues.idProducts) }
+        })
+        const dataUpdate = arrayStock.map(stockVal => {
+            // buscamos que cantidad antidad anterior para volver a su estado anterior
+            const oldAmount = getPreviousValue(
+                ventaProducts,
+                stockVal.dataValues.id
+            )
+            return {
+                stock: stockVal.dataValues.stock + oldAmount,
+                id: stockVal.dataValues.id
+            }
+        })
+        await Promise.all(
+            dataUpdate.map(data =>
+                Product.update(
+                    { stock: data.stock },
+                    { where: { id: data.id } }
+                )
+            )
+        )
+    }
+}
+
+function getPreviousValue(arr, id) {
+    const prod = arr.find(item => id === item.dataValues.idProducts)
+    return prod ? prod.dataValues.amount : 0
 }

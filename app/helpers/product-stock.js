@@ -85,6 +85,7 @@ module.exports = {
             await VentaProduct.destroy({
                 where: { id: dataVenta.map(val => val.dataValues.id) }
             })
+            // traemos nuevamente los datos actualizados para modelar un nuevo registro
             productModel = await Product.findAll({
                 where: { id: products.map(item => item.idProducts) }
             })

@@ -29,7 +29,17 @@ module.exports = {
     // crear item
     async create(req, res) {
         try {
-            if (req.body.ci) req.body.code = req.body.ci
+            if (req.body.phone) {
+                req.body.code = req.body.phone
+                // verificamos si ya existe
+                const existe = await Client.findOne({
+                    where: {
+                        code: req.body.code
+                    }
+                })
+                if (existe) req.body.code == null
+            }
+            if (!req.body.code && !req.body.ci) req.body.code = req.body.ci
             else {
                 // generar un codigo unico para el cliente
                 const code = Date.now().toString(30)

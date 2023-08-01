@@ -94,7 +94,7 @@ router.put(
         validateRoles,
         param('id', 'Invalid id').notEmpty().isNumeric(),
         check('minutes', '"minutes" is required!').not().isEmpty().isNumeric(),
-        check('date', '"date" is required!').not().isEmpty(),
+        // check('date', '"date" is required!').not().isEmpty(),
         check('idUsers').custom(value => {
             if (value) return checkExitsData(value, 'id', User)
             return true
