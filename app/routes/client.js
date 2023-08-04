@@ -11,7 +11,8 @@ const router = express.Router()
 const { validateFields } = require('../middlewares/validateFields')
 const {
     checkExitsDataUpdate,
-    checkExitsData
+    checkExitsData,
+    alreadyExistsInDb
 } = require('./../helpers/validate-db')
 // * CONTROLLERS
 const ClientController = require('../controllers/ClientController')
@@ -85,7 +86,7 @@ router.post(
         // check('email', '¡El correo electrónico es requerido!').not().isEmpty(),
         check('email').custom((email, { req }) => {
             if (email)
-                return checkExitsData(
+                return alreadyExistsInDb(
                     email,
                     'email',
                     Client,
@@ -95,7 +96,7 @@ router.post(
         }),
         check('ci').custom((ci, { req }) => {
             if (ci)
-                return checkExitsData(
+                return alreadyExistsInDb(
                     ci,
                     'ci',
                     Client,

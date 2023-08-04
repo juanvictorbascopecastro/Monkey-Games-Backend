@@ -39,7 +39,7 @@ module.exports = {
                 })
                 if (existe) req.body.code == null
             }
-            if (!req.body.code && !req.body.ci) req.body.code = req.body.ci
+            if (!req.body.code && req.body.ci) req.body.code = req.body.ci
             else {
                 // generar un codigo unico para el cliente
                 const code = Date.now().toString(30)
